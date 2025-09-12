@@ -3,8 +3,13 @@ import chromadb
 from google import genai
 import os
 from dotenv import load_dotenv
+from sentence_transformers import SentenceTransformer
 
 load_dotenv()
+
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
+
 api_key = os.getenv("GOOGLE_API_KEY")
 google_client = genai.Client(api_key=api_key)
 
@@ -47,8 +52,9 @@ def query_db(question : str) -> list[str]:
     return result["documents"][0]
 
 if __name__ == "__main__":
-    question = input("請輸入你的問題：")
     # create_db()
+    question = input("請輸入你的問題：")
+    
     chunks = query_db(question)
     prompt = "Please answer user's question accroding to context\n"
     prompt += f"Question:{question}\n"
@@ -61,4 +67,4 @@ if __name__ == "__main__":
         model=LLM_MODEL,
         contents=prompt
     )
-    print(result)
+    print(result.candidates[0].content.parts[0].text)
