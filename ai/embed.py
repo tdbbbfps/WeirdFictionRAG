@@ -9,41 +9,27 @@ load_dotenv()
 
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
-
-api_key = os.getenv("GOOGLE_API_KEY")
-google_client = genai.Client(api_key=api_key)
-
-EMBEDDING_MODEL = "gemini-embedding-exp-03-07"
-LLM_MODEL = "gemini-2.5-flash-lite"
-
 chromadb_client = chromadb.PersistentClient("./chroma.db")
 chromadb_collection = chromadb_client.get_or_create_collection("fiction")
 
-# 將文字轉換為向量陣列
-def embed(text : str, is_store : bool) -> list[float]:
-    result = google_client.models.embed_content(
-        model=EMBEDDING_MODEL,
-        contents=text,
-        config={
-            "task_type": "RETRIEVAL_DOCUMENT" if (is_store) else "RETRIEVAL_QUERY" # Google Embedding模型接口有查詢與儲存
-        }
-    )
-    assert result.embeddings
-    assert result.embeddings[0].values # 為了方便直接用assert 實務上要做錯誤處理
-    return result.embeddings[0].values
-# 創建向量資料庫
+# Convert text to embedding vector array.
+def embed(text : str) -> list[float]:
+    embeddings = model.encode([text])
+    return embeddings[0].tolist()
+
+# Create vector database
 def create_db() -> None:
     for idx, c in enumerate(chunk.get_chunks()):
         print(f"Process: {c}")
-        embedding = embed(c, True)
+        embedding = embed(c)
         chromadb_collection.upsert(
             ids=str(idx),
             documents=c,
             embeddings=embedding
         )
-# 查詢向量資料庫
+# Query vector database
 def query_db(question : str) -> list[str]:
-    question_embedding = embed(question, False)
+    question_embedding = embed(question)
     result = chromadb_collection.query(
         query_embeddings=question_embedding,
         n_results=5 # 回傳5條最相關的內容
