@@ -1,12 +1,8 @@
 from fastapi import FastAPI
 import ollama
 from pydantic import BaseModel
-
-
-# Define request model's property
-class RequestModel(BaseModel):
-    prompt : str
-    model : str
+from schemas import RequestModel
+from routers import router
 
 # uvicorn main:app --reload
 app = FastAPI()
@@ -32,4 +28,3 @@ async def get_ollama_models():
     for model in models_info["models"]:
         models.append(model.model)
     return models
-
