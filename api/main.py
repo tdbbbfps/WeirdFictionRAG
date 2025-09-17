@@ -27,4 +27,4 @@ async def get_ollama_models():
     models = []
     for model in models_info["models"]:
         models.append(model.model)
-    return models
+    return {"model": models}

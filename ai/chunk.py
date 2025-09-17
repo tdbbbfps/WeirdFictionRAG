@@ -27,6 +27,10 @@ def get_chunks() -> list[str]:
 
     return result
 
+def get_system_prompt():
+    pass
+
+
 if __name__ == "__main__":
     chunks = get_chunks()
     for c in chunks:
